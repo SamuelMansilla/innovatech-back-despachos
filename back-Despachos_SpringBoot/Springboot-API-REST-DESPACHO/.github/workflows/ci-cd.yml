@@ -46,9 +46,6 @@ jobs:
           proxy_key: ${{ secrets.EC2_SSH_KEY }}
           script: |
             cd /home/ec2-user/app
-            # Autenticar el motor de Docker con tu cuenta de Amazon ECR en la máquina privada
             aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 536888590851.dkr.ecr.us-east-1.amazonaws.com
-            
-            # Forzar la descarga de la nueva imagen y reiniciar el contenedor de despachos amarrado al compose
             docker compose pull back-despachos
             docker compose up -d --remove-orphans back-despachos

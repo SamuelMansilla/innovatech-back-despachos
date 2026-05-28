@@ -44,7 +44,7 @@ jobs:
           host: "10.0.160.179"       # IP Privada interna de tu máquina de Backend
           username: ec2-user
           key: ${{ secrets.EC2_SSH_KEY }}
-          proxy_host: "98.91.210.46" # IP Pública de tu Frontend (El Puente)
+          proxy_host: "13.223.138.140" # IP Pública de tu Frontend (El Puente)
           proxy_username: ec2-user
           proxy_key: ${{ secrets.EC2_SSH_KEY }}
           script: |

@@ -27,7 +27,10 @@ jobs:
       - name: 4. Construir y subir imagen a Amazon ECR
         uses: docker/build-push-action@v4
         with:
-          context: .
+          # CORRECCIÓN: Apunta a la carpeta donde están el pom.xml y src
+          context: ./back-Despachos_SpringBoot/Springboot-API-REST-DESPACHO
+          # CORRECCIÓN: Indica dónde quedó el Dockerfile que moviste
+          file: ./back-Despachos_SpringBoot/Springboot-API-REST-DESPACHO/Dockerfile
           push: true
           tags: 536888590851.dkr.ecr.us-east-1.amazonaws.com/innovatech-back-despachos:latest
 

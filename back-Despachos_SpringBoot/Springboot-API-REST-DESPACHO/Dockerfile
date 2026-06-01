@@ -1,4 +1,4 @@
-# Etapa 1: Compilación de la aplicación con Maven
+# Etapa 1: Compilación de la aplicación con Mave
 FROM maven:3.8.5-openjdk-17 AS build
 WORKDIR /app
 

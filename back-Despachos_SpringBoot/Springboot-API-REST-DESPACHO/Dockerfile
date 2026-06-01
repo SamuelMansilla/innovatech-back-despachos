@@ -9,8 +9,8 @@ COPY src ./src
 # Compilar saltándose los tests para ahorrar tiempo en GitHub
 RUN mvn clean package -DskipTests
 
-# Etapa 2: Imagen final de ejecución
-FROM openjdk:17-jdk-slim
+# Etapa 2: Imagen final de ejecución (¡Aquí se corrige el error!)
+FROM eclipse-temurin:17-jre-alpine
 WORKDIR /app
 
 # Copiar el JAR generado desde la etapa anterior

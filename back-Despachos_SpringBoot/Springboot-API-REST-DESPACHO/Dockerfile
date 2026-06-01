@@ -1,31 +1,22 @@
-# ==========================================
-# ETAPA 1: Compilación y Construcción (Maven)
-# ==========================================
-FROM maven:3.9-eclipse-temurin-17-alpine AS builder
+# Etapa 1: Compilación de la aplicación con Maven
+FROM maven:3.8.5-openjdk-17 AS build
 WORKDIR /app
 
-# Copiamos el archivo pom.xml para descargar las dependencias en caché
+# Copiar dependencias y código fuente
 COPY pom.xml .
-RUN mvn dependency:go-offline
-
-# Copiamos el código fuente y compilamos el archivo .jar (omitiendo tests)
 COPY src ./src
+
+# Compilar saltándose los tests para ahorrar tiempo en GitHub
 RUN mvn clean package -DskipTests
 
-# ==========================================
-# ETAPA 2: Entorno de Ejecución Ligero y Seguro
-# ==========================================
-FROM eclipse-temurin:17-jre-alpine
-
-# Creamos un usuario de sistema sin privilegios para Spring
-RUN addgroup -S spring && adduser -S spring -G spring
-USER spring:spring
+# Etapa 2: Imagen final de ejecución
+FROM openjdk:17-jdk-slim
 WORKDIR /app
 
-# Copiamos el JAR compilado desde la etapa anterior
-COPY --from=builder /app/target/*.jar app.jar
+# Copiar el JAR generado desde la etapa anterior
+COPY --from=build /app/target/*.jar app.jar
 
-# Exponemos el puerto interno de la aplicación
+# Exponer el puerto por defecto de Spring Boot
 EXPOSE 8080
 
 ENTRYPOINT ["java", "-jar", "app.jar"]

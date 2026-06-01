@@ -1,0 +1,59 @@
+name: CI/CD Backend Despachos
+
+on:
+  push:
+    branches:
+      - deploy
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+
+    steps:
+    # 1. Clonar el repositorio
+    - name: Checkout del código
+      uses: actions/checkout@v3
+
+    # 2. Configurar credenciales dinámicas de AWS Academy
+    - name: Configurar credenciales de AWS
+      uses: aws-actions/configure-aws-credentials@v2
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
+        aws-region: us-east-1
+
+    # 3. Autenticarse en Amazon ECR
+    - name: Iniciar sesión en Amazon ECR
+      id: login-ecr
+      uses: aws-actions/amazon-ecr-login@v1
+
+    # 4. Entrar a la subcarpeta, construir la imagen y subirla a ECR
+    - name: Construir, etiquetar y subir imagen a Amazon ECR
+      env:
+        ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+        ECR_REPOSITORY: innovatech-back-despachos
+        IMAGE_TAG: latest
+      run: |
+        # 🌟 Entramos a la ruta real donde está tu pom.xml y tu Dockerfile
+        cd back-Despachos_SpringBoot/Springboot-API-REST-DESPACHO
+        docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
+        docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+
+    # 5. Entrar al Backend usando el Frontend como puente (Bastion)
+    - name: Desplegar usando EC2-Frontend como puente
+      uses: appleboy/ssh-action@v1.0.3
+      with:
+        host: "10.0.138.187"
+        username: ec2-user
+        key: ${{ secrets.EC2_SSH_KEY }}
+        proxy_host: "35.171.177.194"
+        proxy_username: ec2-user
+        proxy_key: ${{ secrets.EC2_SSH_KEY }}
+        script: |
+          cd /home/ec2-user/app
+          # Autenticar Docker internamente con el nuevo ID de cuenta
+          aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 264683506277.dkr.ecr.us-east-1.amazonaws.com
+          # Descargar la nueva versión y levantar el contenedor
+          docker compose pull back-despachos
+          docker compose up -d --remove-orphans back-despachos
